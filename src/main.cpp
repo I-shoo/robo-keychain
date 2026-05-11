@@ -9,6 +9,8 @@
 #include "sleepy.h"
 #include "fly.h"
 #include "space_invaders.h"
+#include "worried.h"
+#include "susp.h"
 #include "dance.h"
 
 #define SCREEN_WIDTH 128
@@ -29,9 +31,11 @@ struct OneShot {
   int len;
 };
 const OneShot idlePool[] = {
-  { sleepy_allArray, nullptr,             sleepy_allArray_LEN },
-  { fly_allArray,    nullptr,             fly_allArray_LEN    },
-  { nullptr,         drawSpaceInvaders,   SI_FRAMES           },
+  { sleepy_allArray,   nullptr,           sleepy_allArray_LEN   },
+  { fly_allArray,      nullptr,           fly_allArray_LEN      },
+  { worried_allArray,  nullptr,           worried_allArray_LEN  },
+  { susp_allArray,     nullptr,           susp_allArray_LEN     },
+  { nullptr,           drawSpaceInvaders, SI_FRAMES             },
   // bitmap:      { myAnim_allArray, nullptr, myAnim_allArray_LEN }
   // procedural:  { nullptr, myDrawFunc,     FRAME_COUNT         }
 };

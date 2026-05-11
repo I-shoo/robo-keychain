@@ -14,21 +14,20 @@ static const uint8_t SI_EXPSPR[3][8] PROGMEM = {
 };
 
 // ── Layout ─────────────────────────────────────────────────────────────
-static const int SI_ROWS = 3;
+static const int SI_ROWS = 2;
 static const int SI_COLS = 5;
 static const int SI_CW   = 12;   // column width
 static const int SI_RH   = 10;   // row height
 static const int SI_OX   = 18;   // formation left edge
-static const int SI_OY   = 2;    // formation top
+static const int SI_OY   = 8;    // formation top
 static const int SI_CB   = 52;   // cannon body top y
-static const int SI_TOTAL  = SI_ROWS * SI_COLS;  // 15
-#define SI_FRAMES 300  // safety timeout (real exit via return true)
+static const int SI_TOTAL  = SI_ROWS * SI_COLS;  // 10
+#define SI_FRAMES 200  // safety timeout (real exit via return true)
 
-// Scripted kill order: bottom L→R, middle R→L, top L→R
+// Scripted kill order: bottom L→R, top R→L
 static const uint8_t SI_KILL[SI_TOTAL][2] PROGMEM = {
-  {2,0},{2,1},{2,2},{2,3},{2,4},
-  {1,4},{1,3},{1,2},{1,1},{1,0},
-  {0,0},{0,1},{0,2},{0,3},{0,4},
+  {1,0},{1,1},{1,2},{1,3},{1,4},
+  {0,4},{0,3},{0,2},{0,1},{0,0},
 };
 
 // ── Game state ─────────────────────────────────────────────────────────
@@ -72,8 +71,8 @@ bool drawSpaceInvaders(Adafruit_SSD1306& d, int f) {
     siSt = SI_AIM;
   }
 
-  // Formation oscillates left-right slowly
-  if (++siFCnt >= 4) {
+  // Formation oscillates left-right
+  if (++siFCnt >= 3) {
     siFCnt = 0;
     siFX += siFDir;
     if (siFX >= 16 || siFX <= 0) siFDir = -siFDir;
@@ -100,19 +99,19 @@ bool drawSpaceInvaders(Adafruit_SSD1306& d, int f) {
         siBx = siCx; siBy = SI_CB - 5;
         siBullet = true; siSt = SI_FLY;
       } else {
-        siCx += constrain(diff, -8, 8);  // move toward target
+        siCx += constrain(diff, -14, 14);  // move toward target
       }
       break;
     }
 
     case SI_FLY: {
-      siBy -= 12;                        // bullet flies up
+      siBy -= 18;                        // bullet flies up
       uint8_t tr = pgm_read_byte(&SI_KILL[siKill][0]);
       uint8_t tc = pgm_read_byte(&SI_KILL[siKill][1]);
       int ex = siEX(tc), ey = siEY(tr);
 
-      // Hit detection
-      if (siBy <= ey + 8 && siBy >= ey - 8 &&
+      // Hit detection — vertical window covers full bullet step to prevent skipping
+      if (siBy <= ey + 8 && siBy >= ey - 20 &&
           abs(siBx - (ex + 4)) <= 8) {
         siAlive[tr][tc] = false;
         siBullet = false;
@@ -126,11 +125,11 @@ bool drawSpaceInvaders(Adafruit_SSD1306& d, int f) {
     }
 
     case SI_EXP:
-      if (++siExpT >= 9) siSt = SI_AIM;  // explosion lasts 9 frames
+      if (++siExpT >= 6) siSt = SI_AIM;  // explosion lasts 6 frames
       break;
 
     case SI_WIN:
-      if (++siVictory >= 40) return true; // animation complete
+      if (++siVictory >= 25) return true; // animation complete
       break;
   }
 
